@@ -194,3 +194,134 @@
         initMonthFilter();
         document.getElementById('target-date').addEventListener('change', loadData);
     };
+
+    window.addCount = (type) => { counts[type]++; updateCountUI(type); };
+    window.resetCount = (type, e) => { e.stopPropagation(); counts[type] = 0; updateCountUI(type); };
+    
+    function updateCountUI(type) {
+        document.getElementById(`val-${type}`).innerText = counts[type];
+        const btn = document.getElementById(`btn-${type}`);
+        const reset = document.getElementById(`reset-${type}`);
+        if(counts[type] > 0) { btn.classList.add('active'); reset.classList.add('show'); }
+        else { btn.classList.remove('active'); reset.classList.remove('show'); }
+    }
+
+    window.selectSingle = (btn, groupId) => {
+        document.querySelectorAll(`#${groupId} .btn-check`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    };
+
+    window.loadData = () => {
+        const date = document.getElementById('target-date').value;
+        const d = allHistory[date];
+        document.querySelectorAll('.btn-check, #rabbit-stamp').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('input:not([type="date"]), textarea').forEach(i => i.value = "");
+        counts = { water: 0, coffee: 0, step: 0, vege: 0 };
+        Object.keys(counts).forEach(updateCountUI);
+
+        if (d) {
+            document.querySelectorAll('#mood-group .btn-check').forEach(b => { 
+                if(b.innerText.includes(d.mood)) b.classList.add('active'); 
+            });
+            if(d.rabbitStamp) document.getElementById('rabbit-stamp').classList.add('active');
+            if(d.cares) d.cares.split(',').forEach(c => {
+                document.querySelectorAll('#care-group .btn-check').forEach(b => { if(b.innerText.includes(c)) b.classList.add('active'); });
+            });
+            counts = d.counts || { water: 0, coffee: 0, step: 0, vege: 0 };
+            Object.keys(counts).forEach(updateCountUI);
+            document.getElementById('body-temp').value = d.temp || "";
+            document.getElementById('mind-space').value = d.space || "";
+            document.getElementById('fashion').value = d.fashion || "";
+            document.getElementById('scent').value = d.scent || "";
+            document.getElementById('culture').value = d.culture || "";
+            document.getElementById('praise').value = d.praise || "";
+            document.getElementById('thanks').value = d.thanks || "";
+            document.getElementById('today-q').value = d.todayQ || "";
+            document.getElementById('today-a').value = d.todayA || "";
+            document.getElementById('work-h').value = d.workH || "";
+            document.getElementById('money-amt').value = d.moneyA || "";
+            document.getElementById('meal').value = d.meal || "";
+            document.getElementById('sleepT').value = d.sleepT || "";
+            document.getElementById('wakeT').value = d.wakeT || "";
+            document.getElementById('screen-h').value = d.screen || "";
+            document.getElementById('memo').value = d.memo || "";
+        }
+    };
+
+    window.saveData = async () => {
+        const date = document.getElementById('target-date').value;
+        const entry = {
+            date,
+            mood: document.querySelector('#mood-group .active')?.innerText.split('\n')[0] || "-",
+            temp: document.getElementById('body-temp').value,
+            space: document.getElementById('mind-space').value,
+            rabbitStamp: document.getElementById('rabbit-stamp').classList.contains('active'),
+            counts: { ...counts },
+            cares: Array.from(document.querySelectorAll('#care-group .active')).map(b => b.innerText.charAt(1)).join(','),
+            fashion: document.getElementById('fashion').value,
+            scent: document.getElementById('scent').value,
+            culture: document.getElementById('culture').value,
+            praise: document.getElementById('praise').value,
+            thanks: document.getElementById('thanks').value,
+            todayQ: document.getElementById('today-q').value,
+            todayA: document.getElementById('today-a').value,
+            workH: document.getElementById('work-h').value,
+            moneyA: document.getElementById('money-amt').value,
+            meal: document.getElementById('meal').value,
+            sleepT: document.getElementById('sleepT').value,
+            wakeT: document.getElementById('wakeT').value,
+            screen: document.getElementById('screen-h').value,
+            memo: document.getElementById('memo').value
+        };
+        document.getElementById('loading').style.display = 'flex';
+        try { 
+            await set(ref(db, `${LOG_PATH}/${date}`), entry); 
+            alert("森へ同期しました🌿"); 
+        } catch (e) { 
+            alert("エラー: " + e.message); 
+        }
+        document.getElementById('loading').style.display = 'none';
+    };
+
+    window.initMonthFilter = () => {
+        const filter = document.getElementById('month-filter');
+        const now = new Date();
+        for(let i=0; i<12; i++) {
+            let d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            let val = d.toLocaleDateString('sv-SE').slice(0, 7);
+            filter.innerHTML += `<option value="${val}">${d.getFullYear()}年${d.getMonth()+1}月</option>`;
+        }
+    };
+
+    window.showHistory = () => {
+        const filter = document.getElementById('month-filter').value;
+        const table = document.getElementById('matrix-table');
+        const filtered = Object.values(allHistory).filter(d => d.date?.startsWith(filter)).sort((a,b)=>a.date>b.date?1:-1);
+        
+        const rows = {
+            date: '<th class="label-col">日付</th>',
+            mood: '<th class="label-col">気分/体温</th>',
+            log: '<th class="label-col">習慣ログ</th>',
+            care: '<th class="label-col">ケア/装い</th>',
+            praise: '<th class="label-col">はなまる</th>',
+            activity: '<th class="label-col">活動/金</th>',
+            sleep: '<th class="label-col">睡眠/画面</th>',
+            memo: '<th class="label-col">メモ</th>'
+        };
+
+        filtered.forEach(d => {
+            const c = d.counts || {};
+            rows.date += `<td><b>${d.date.slice(8)}日</b></td>`;
+            rows.mood += `<td>${d.mood}<br>${d.temp||'-'}℃<br>${d.space||'-'}%</td>`;
+            rows.log += `<td>💧${c.water||0} ☕️${c.coffee||0}<br>👟${c.step||0} 🥗${c.vege||0}</td>`;
+            rows.care += `<td class="wrap-cell">【ケ】${d.cares||'-'}<br>【服】${d.fashion||'-'}</td>`;
+            rows.praise += `<td class="wrap-cell"><b>は:</b>${d.praise||'-'}<br><b>感:</b>${d.thanks||'-'}</td>`;
+            rows.activity += `<td>📖${d.workH||0}h<br>💸${d.moneyA||0}</td>`;
+            rows.sleep += `<td>💤${d.sleepT||'-'}<br>📱${d.screen||0}h</td>`;
+            rows.memo += `<td class="wrap-cell">${d.memo || '-'}</td>`;
+        });
+        table.innerHTML = Object.values(rows).map(r => `<tr>${r}</tr>`).join('');
+    };
+</script>
+</body>
+</html>
