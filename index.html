@@ -13,6 +13,7 @@
         .card { background: var(--card); border-radius: 28px; padding: 24px; box-shadow: 0 10px 30px rgba(45, 106, 79, 0.08); margin-bottom: 24px; border: 1px solid var(--border-soft); }
         h1 { font-size: 1.5rem; color: var(--primary); text-align: center; margin-bottom: 25px; }
         
+        /* ログイン画面 */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; justify-content: center; align-items: center; }
         .login-card { text-align: center; max-width: 320px; width: 90%; }
         .pass-input { text-align: center; letter-spacing: 0.3em; font-size: 1.2rem; margin: 20px 0; border: 2px solid var(--accent); padding: 14px; width: 100%; border-radius: 15px; box-sizing: border-box; background: white;}
@@ -28,24 +29,24 @@
         .btn-check { width: 100%; border: 2px solid #edf5ee; background: white; border-radius: 16px; padding: 12px 5px; cursor: pointer; font-size: 1.2rem; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; }
         .btn-check span { font-size: 0.7rem; margin-top: 4px; color: #74a38d; }
         .btn-check.active { border-color: var(--active-green); background: var(--active-green); color: white; }
-        .btn-check.active span { color: white; opacity: 0.9; }
         
         .btn-reset { position: absolute; top: -5px; right: -5px; width: 22px; height: 22px; background: var(--reset-red); color: white; border: none; border-radius: 50%; font-size: 12px; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 2; }
         .counter-item:hover .btn-reset.show { display: flex; }
         
         .row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
         .col { flex: 1; min-width: 120px; }
-        input, textarea, select { width: 100%; padding: 14px; border: 1.5px solid var(--border-soft); border-radius: 15px; font-size: 0.95rem; outline: none; background: var(--input-bg); font-family: inherit; box-sizing: border-box; }
+        input, textarea { width: 100%; padding: 14px; border: 1.5px solid var(--border-soft); border-radius: 15px; outline: none; background: var(--input-bg); font-family: inherit; box-sizing: border-box; }
         textarea { height: 80px; resize: none; }
         .small-label { font-size: 0.7rem; color: var(--primary); font-weight: bold; margin-bottom: 4px; display: block; }
         
         .save-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 18px; border-radius: 50px; font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 8px 20px rgba(45, 106, 79, 0.2); margin-top: 30px; }
         
+        /* 履歴テーブル：1日1列デザインの復活 */
         .table-container { width: 100%; overflow-x: auto; background: white; border-radius: 20px; border: 1px solid var(--accent); }
-        table { border-collapse: collapse; min-width: 1200px; font-size: 0.75rem; table-layout: fixed; }
-        th.label-col { position: sticky; left: 0; background: #f1f8f4; z-index: 10; width: 100px; border-right: 2px solid var(--accent); }
-        td, th { border: 1px solid #eef5f0; padding: 10px; text-align: center; }
-        .wrap-cell { white-space: normal; text-align: left; line-height: 1.3; }
+        table { border-collapse: collapse; min-width: 1000px; font-size: 0.8rem; table-layout: fixed; }
+        th.label-col { position: sticky; left: 0; background: #f1f8f4; z-index: 10; width: 110px; border-right: 2px solid var(--accent); }
+        td, th { border: 1px solid #eef5f0; padding: 12px 8px; text-align: center; vertical-align: middle; }
+        .wrap-cell { white-space: normal; text-align: left; line-height: 1.4; padding: 10px; }
         
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 10000; flex-direction: column; }
     </style>
@@ -56,8 +57,8 @@
     <div class="card login-card">
         <h2>🌿 森の入り口</h2>
         <p style="font-size:0.8rem;">合言葉を入力してください</p>
-        <input type="password" id="pass-input" class="pass-input" maxlength="6" placeholder="******" onkeydown="if(event.key==='Enter') checkPassword()">
-        <button class="save-btn" style="margin-top:0;" onclick="checkPassword()">扉を開ける</button>
+        <input type="password" id="pass-input" class="pass-input" maxlength="6" placeholder="******" onkeydown="if(event.key==='Enter') window.checkPassword()">
+        <button class="save-btn" style="margin-top:0;" onclick="window.checkPassword()">扉を開ける</button>
         <p id="error-msg" style="color:var(--reset-red); font-size:0.7rem; margin-top:15px; display:none;">合言葉が違います</p>
     </div>
 </div>
@@ -136,7 +137,7 @@
 
     <div class="card">
         <h2>🍃 森の記憶</h2>
-        <div class="history-ctrl"><select id="month-filter" onchange="showHistory()"></select></div>
+        <div class="history-ctrl" style="margin-bottom:15px;"><select id="month-filter" onchange="showHistory()"></select></div>
         <div class="table-container"><table id="matrix-table"><tbody id="table-body"></tbody></table></div>
     </div>
 </div>
@@ -163,30 +164,25 @@
     let counts = { water: 0, coffee: 0, step: 0, vege: 0 };
     let allHistory = {};
 
-    // ログイン関数をグローバル（window）に登録
     window.checkPassword = function() {
-        const input = document.getElementById('pass-input').value;
-        if(input === CORRECT_PASS) {
+        const val = document.getElementById('pass-input').value;
+        if(val === CORRECT_PASS) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             startSync();
         } else {
             document.getElementById('error-msg').style.display = 'block';
-            document.getElementById('pass-input').value = "";
         }
     };
 
     function startSync() {
         document.getElementById('loading').style.display = 'flex';
-        onValue(ref(db, LOG_PATH), (snapshot) => {
-            allHistory = snapshot.val() || {};
+        onValue(ref(db, LOG_PATH), (snap) => {
+            allHistory = snap.val() || {};
             showHistory();
             loadData();
             document.getElementById('loading').style.display = 'none';
-        }, (err) => { 
-            console.error(err);
-            document.getElementById('loading').style.display = 'none'; 
-        });
+        }, (err) => { document.getElementById('loading').style.display = 'none'; });
     }
 
     window.onload = () => {
@@ -197,7 +193,6 @@
 
     window.addCount = (type) => { counts[type]++; updateCountUI(type); };
     window.resetCount = (type, e) => { e.stopPropagation(); counts[type] = 0; updateCountUI(type); };
-    
     function updateCountUI(type) {
         document.getElementById(`val-${type}`).innerText = counts[type];
         const btn = document.getElementById(`btn-${type}`);
@@ -220,9 +215,7 @@
         Object.keys(counts).forEach(updateCountUI);
 
         if (d) {
-            document.querySelectorAll('#mood-group .btn-check').forEach(b => { 
-                if(b.innerText.includes(d.mood)) b.classList.add('active'); 
-            });
+            document.querySelectorAll('#mood-group .btn-check').forEach(b => { if(b.innerText.includes(d.mood)) b.classList.add('active'); });
             if(d.rabbitStamp) document.getElementById('rabbit-stamp').classList.add('active');
             if(d.cares) d.cares.split(',').forEach(c => {
                 document.querySelectorAll('#care-group .btn-check').forEach(b => { if(b.innerText.includes(c)) b.classList.add('active'); });
@@ -274,16 +267,12 @@
             memo: document.getElementById('memo').value
         };
         document.getElementById('loading').style.display = 'flex';
-        try { 
-            await set(ref(db, `${LOG_PATH}/${date}`), entry); 
-            alert("森へ同期しました🌿"); 
-        } catch (e) { 
-            alert("エラー: " + e.message); 
-        }
+        try { await set(ref(db, `${LOG_PATH}/${date}`), entry); alert("同期しました🌿"); } 
+        catch (e) { alert("エラー: " + e.message); }
         document.getElementById('loading').style.display = 'none';
     };
 
-    window.initMonthFilter = () => {
+    function initMonthFilter() {
         const filter = document.getElementById('month-filter');
         const now = new Date();
         for(let i=0; i<12; i++) {
@@ -291,7 +280,7 @@
             let val = d.toLocaleDateString('sv-SE').slice(0, 7);
             filter.innerHTML += `<option value="${val}">${d.getFullYear()}年${d.getMonth()+1}月</option>`;
         }
-    };
+    }
 
     window.showHistory = () => {
         const filter = document.getElementById('month-filter').value;
@@ -313,11 +302,11 @@
             const c = d.counts || {};
             rows.date += `<td><b>${d.date.slice(8)}日</b></td>`;
             rows.mood += `<td>${d.mood}<br>${d.temp||'-'}℃<br>${d.space||'-'}%</td>`;
-            rows.log += `<td>💧${c.water||0} ☕️${c.coffee||0}<br>👟${c.step||0} 🥗${c.vege||0}</td>`;
-            rows.care += `<td class="wrap-cell">【ケ】${d.cares||'-'}<br>【服】${d.fashion||'-'}</td>`;
-            rows.praise += `<td class="wrap-cell"><b>は:</b>${d.praise||'-'}<br><b>感:</b>${d.thanks||'-'}</td>`;
+            rows.log += `<td>🥛${c.water||0} ☕️${c.coffee||0}<br>👟${c.step||0} 🥗${c.vege||0}</td>`;
+            rows.care += `<td class="wrap-cell">ケア:${d.cares||'-'}<br>服:${d.fashion||'-'}</td>`;
+            rows.praise += `<td class="wrap-cell">🌸 ${d.praise||'-'}<br>🤝 ${d.thanks||'-'}</td>`;
             rows.activity += `<td>📖${d.workH||0}h<br>💸${d.moneyA||0}</td>`;
-            rows.sleep += `<td>💤${d.sleepT||'-'}<br>📱${d.screen||0}h</td>`;
+            rows.sleep += `<td>💤 ${d.sleepT||'-'}<br>📱 ${d.screen||0}h</td>`;
             rows.memo += `<td class="wrap-cell">${d.memo || '-'}</td>`;
         });
         table.innerHTML = Object.values(rows).map(r => `<tr>${r}</tr>`).join('');
