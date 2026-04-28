@@ -5,13 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gentle Step Log - Cloud Edition</title>
     <style>
-        /* 元のCSSをここに貼り付け */
         @import url('https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Noto+Sans+JP:wght@400;700&display=swap');
         :root { --primary: #2d6a4f; --primary-light: #52b788; --bg: #f8fcf9; --card: #ffffff; --accent: #b7e4c7; --text: #1b4332; --input-bg: #fafff8; --active-green: #2d6a4f; --rabbit-pink: #ffcad4; --border-soft: #e0eee4; --reset-red: #ff8a8a; }
+        
         body { font-family: 'Kiwi Maru', 'Noto Sans JP', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); line-height: 1.6; }
-        .app { width: 100%; max-width: 1000px; margin: 0 auto; }
+        .app { width: 100%; max-width: 1000px; margin: 0 auto; display: none; }
         .card { background: var(--card); border-radius: 28px; padding: 24px; box-shadow: 0 10px 30px rgba(45, 106, 79, 0.08); margin-bottom: 24px; border: 1px solid var(--border-soft); }
         h1 { font-size: 1.5rem; color: var(--primary); text-align: center; margin-bottom: 25px; }
+        
+        /* ログイン画面のスタイル */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-card { text-align: center; max-width: 320px; width: 90%; }
+        .pass-input { text-align: center; letter-spacing: 0.3em; font-size: 1.2rem; margin: 20px 0; border: 2px solid var(--accent); }
+        
         .date-area { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; }
         .date-selector input { padding: 10px 18px; border-radius: 20px; border: 2px solid var(--accent); font-size: 1rem; color: var(--primary); outline: none; background: var(--input-bg); }
         .rabbit-stamp-btn { background: white; border: 2px solid #edf5ee; border-radius: 50%; width: 55px; height: 55px; font-size: 1.6rem; cursor: pointer; transition: all 0.3s; }
@@ -42,17 +48,25 @@
 </head>
 <body>
 
+<div id="login-screen">
+    <div class="card login-card">
+        <h2>🌿 森の入り口</h2>
+        <p style="font-size:0.8rem; color:var(--primary-light);">合言葉を入力してください</p>
+        <input type="password" id="pass-input" class="pass-input" maxlength="6" placeholder="******" autocomplete="current-password">
+        <button class="save-btn" style="margin-top:0;" id="login-btn">扉を開ける</button>
+        <p id="error-msg" style="color:var(--reset-red); font-size:0.7rem; margin-top:15px; display:none;">合言葉が違います</p>
+    </div>
+</div>
+
 <div id="loading" class="loading-overlay">🌿 森の声を聴いています...</div>
 
-<div class="app">
+<div class="app" id="main-app">
     <div class="card">
         <h1>🌿 Gentle Step Log (Cloud)</h1>
-        
         <div class="date-area">
             <div class="date-selector"><input type="date" id="target-date"></div>
             <button class="rabbit-stamp-btn" id="rabbit-stamp" onclick="this.classList.toggle('active')">🐇</button>
         </div>
-
         <h2>✨ こころとからだ</h2>
         <div class="grid" id="mood-group">
             <button class="btn-check" onclick="selectSingle(this, 'mood-group')">🌈<span>最高</span></button>
@@ -65,28 +79,14 @@
             <div class="col"><span class="small-label">体温</span><input type="text" id="body-temp" placeholder="36.5"></div>
             <div class="col"><span class="small-label">心の余裕(%)</span><input type="number" id="mind-space" placeholder="80"></div>
         </div>
-
         <h2>🌳 暮らしの習慣</h2>
         <div class="grid">
-            <div class="counter-item">
-                <button class="btn-check" id="btn-water" onclick="addCount('water')">🥛<span>水 <b id="val-water">0</b></span></button>
-                <button class="btn-reset" id="reset-water" onclick="resetCount('water', event)">×</button>
-            </div>
-            <div class="counter-item">
-                <button class="btn-check" id="btn-coffee" onclick="addCount('coffee')">☕️<span>カフェイン<b id="val-coffee">0</b></span></button>
-                <button class="btn-reset" id="reset-coffee" onclick="resetCount('coffee', event)">×</button>
-            </div>
-            <div class="counter-item">
-                <button class="btn-check" id="btn-step" onclick="addCount('step')">👟<span>外出 <b id="val-step">0</b></span></button>
-                <button class="btn-reset" id="reset-step" onclick="resetCount('step', event)">×</button>
-            </div>
-            <div class="counter-item">
-                <button class="btn-check" id="btn-vege" onclick="addCount('vege')">🥗<span>野菜 <b id="val-vege">0</b></span></button>
-                <button class="btn-reset" id="reset-vege" onclick="resetCount('vege', event)">×</button>
-            </div>
+            <div class="counter-item"><button class="btn-check" id="btn-water" onclick="addCount('water')">🥛<span>水 <b id="val-water">0</b></span></button><button class="btn-reset" id="reset-water" onclick="resetCount('water', event)">×</button></div>
+            <div class="counter-item"><button class="btn-check" id="btn-coffee" onclick="addCount('coffee')">☕️<span>カフェイン<b id="val-coffee">0</b></span></button><button class="btn-reset" id="reset-coffee" onclick="resetCount('coffee', event)">×</button></div>
+            <div class="counter-item"><button class="btn-check" id="btn-step" onclick="addCount('step')">👟<span>外出 <b id="val-step">0</b></span></button><button class="btn-reset" id="reset-step" onclick="resetCount('step', event)">×</button></div>
+            <div class="counter-item"><button class="btn-check" id="btn-vege" onclick="addCount('vege')">🥗<span>野菜 <b id="val-vege">0</b></span></button><button class="btn-reset" id="reset-vege" onclick="resetCount('vege', event)">×</button></div>
         </div>
-
-        <h2>🧘 セルフケア (複数選択)</h2>
+        <h2>🧘 セルフケア</h2>
         <div class="grid" id="care-group">
             <button class="btn-check" onclick="this.classList.toggle('active')">🛀<span>入浴</span></button>
             <button class="btn-check" onclick="this.classList.toggle('active')">🧴<span>保湿</span></button>
@@ -95,100 +95,108 @@
             <button class="btn-check" onclick="this.classList.toggle('active')">📵<span>SNS断</span></button>
             <button class="btn-check" onclick="this.classList.toggle('active')">🧹<span>掃除</span></button>
         </div>
-
         <h2>👗 装い・香り・芸術</h2>
         <div class="row">
             <input type="text" id="fashion" placeholder="👕 服装のポイント">
             <input type="text" id="scent" placeholder="🕯️ 今日の香り">
             <input type="text" id="culture" placeholder="🎵 聴いた音楽・観たもの">
         </div>
-
         <h2>🌸 はなまる・感謝・対話</h2>
         <textarea id="praise" placeholder="【自分へのはなまる】"></textarea>
         <textarea id="thanks" placeholder="【感謝・つながり】"></textarea>
-        
-        <div class="row">
-            <div class="col"><span class="small-label">❓ 自分への問い</span><input type="text" id="today-q"></div>
-        </div>
+        <div class="row"><div class="col"><span class="small-label">❓ 自分への問い</span><input type="text" id="today-q"></div></div>
         <textarea id="today-a" placeholder="💡 答え..."></textarea>
-
         <h2>📖 活動・お金・食事</h2>
         <div class="row">
             <div class="col"><span class="small-label">集中(h)</span><input type="number" id="work-h" step="0.5"></div>
             <div class="col"><span class="small-label">出費額</span><input type="number" id="money-amt"></div>
             <div class="col"><span class="small-label">出費内容</span><input type="text" id="money-memo"></div>
         </div>
-        <div class="row">
-            <input type="text" id="meal" placeholder="🍴 食べたものメモ">
-        </div>
-
+        <div class="row"><input type="text" id="meal" placeholder="🍴 食べたものメモ"></div>
         <h2>🌙 睡眠・デジタル</h2>
         <div class="row">
             <div class="col"><span class="small-label">就寝</span><input type="time" id="sleepT"></div>
             <div class="col"><span class="small-label">起床</span><input type="time" id="wakeT"></div>
             <div class="col"><span class="small-label">画面(h)</span><input type="number" id="screen-h"></div>
         </div>
-        
         <textarea id="memo" placeholder="🌿 その他の自由なつぶやき..."></textarea>
-        
         <button class="save-btn" onclick="saveData()">今日のきろくを森へ届ける</button>
     </div>
-
     <div class="card">
         <h2 style="margin-top:0; border:none;">🍃 森の記憶</h2>
-        <div class="history-ctrl">
-            <span>表示月を選択:</span>
-            <select id="month-filter" onchange="showHistory()"></select>
-        </div>
-        <div class="table-container">
-            <table id="matrix-table">
-                <tbody id="table-body"></tbody>
-            </table>
-        </div>
+        <div class="history-ctrl"><span>表示月を選択:</span><select id="month-filter" onchange="showHistory()"></select></div>
+        <div class="table-container"><table id="matrix-table"><tbody id="table-body"></tbody></table></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // --- Firebase 設定（ここを自分のものに書き換えてください） ---
+    // --- Firebase 設定 ---
     const firebaseConfig = {
-  apiKey: "AIzaSyB25nc_rH-oi8QY_2PaZZNttGQRrOrZ2KI",
-  authDomain: "gentlesteplog-natsuki.firebaseapp.com",
-　databaseURL: "https://gentlesteplog-natsuki-default-rtdb.asia-southeast1.firebasedatabase.app/", //
-  projectId: "gentlesteplog-natsuki",
-  storageBucket: "gentlesteplog-natsuki.firebasestorage.app",
-  messagingSenderId: "378372692375",
-  appId: "1:378372692375:web:d16ee070202f30b7e28cd2",
-  measurementId: "G-L5K6S8WM10"
-};
+        apiKey: "AIzaSyB25nc_rH-oi8QY_2PaZZNttGQRrOrZ2KI",
+        authDomain: "gentlesteplog-natsuki.firebaseapp.com",
+        projectId: "gentlesteplog-natsuki",
+        storageBucket: "gentlesteplog-natsuki.firebasestorage.app",
+        messagingSenderId: "378372692375",
+        appId: "1:378372692375:web:d16ee070202f30b7e28cd2",
+        measurementId: "G-L5K6S8WM10"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const LOG_PATH = 'logs'; // データベース内の保存先フォルダ名
+    const LOG_PATH = 'logs';
+
+    // --- パスワード認証設定 ---
+    const CORRECT_PASS = "snssns"; 
+
+    // ログイン関数
+    const checkPassword = () => {
+        const passInput = document.getElementById('pass-input');
+        const errorMsg = document.getElementById('error-msg');
+        
+        if (passInput.value === CORRECT_PASS) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            loadData(); // 表示された瞬間にデータを読み込む
+        } else {
+            errorMsg.style.display = 'block';
+            passInput.value = "";
+        }
+    };
+
+    // グローバルに登録
+    window.checkPassword = checkPassword;
+
+    // イベント登録
+    document.getElementById('login-btn').addEventListener('click', checkPassword);
+    document.getElementById('pass-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkPassword();
+    });
 
     let counts = { water: 0, coffee: 0, step: 0, vege: 0 };
-    let allHistory = {}; // クラウド上の全データを保持
+    let allHistory = {};
 
     window.onload = () => {
         const now = new Date();
         document.getElementById('target-date').value = now.toLocaleDateString('sv-SE');
-        
         initMonthFilter();
         
-        // データのリアルタイム監視開始
         const logsRef = ref(db, LOG_PATH);
         onValue(logsRef, (snapshot) => {
             allHistory = snapshot.val() || {};
             showHistory();
-            loadData();
+            // アプリが表示されている時だけフォームに反映
+            if(document.getElementById('main-app').style.display === 'block') {
+                loadData();
+            }
         });
 
         document.getElementById('target-date').addEventListener('change', loadData);
     };
 
-    // フィルタ初期化
+    // --- 以下、既存のロジック ---
     window.initMonthFilter = function() {
         const filter = document.getElementById('month-filter');
         const now = new Date();
@@ -201,7 +209,6 @@
         }
     }
 
-    // カウント操作
     window.addCount = function(type) {
         counts[type]++;
         updateCountUI(type);
@@ -212,11 +219,12 @@
         updateCountUI(type);
     }
     function updateCountUI(type) {
-        document.getElementById(`val-${type}`).innerText = counts[type];
+        const valEl = document.getElementById(`val-${type}`);
+        if(valEl) valEl.innerText = counts[type];
         const btn = document.getElementById(`btn-${type}`);
         const resetBtn = document.getElementById(`reset-${type}`);
-        if(counts[type] > 0) { btn.classList.add('active'); resetBtn.classList.add('show'); }
-        else { btn.classList.remove('active'); resetBtn.classList.remove('show'); }
+        if(counts[type] > 0) { btn?.classList.add('active'); resetBtn?.classList.add('show'); }
+        else { btn?.classList.remove('active'); resetBtn?.classList.remove('show'); }
     }
 
     window.selectSingle = function(btn, groupId) {
@@ -224,12 +232,9 @@
         btn.classList.add('active');
     }
 
-    // データの読み込み
     window.loadData = function() {
         const date = document.getElementById('target-date').value;
         const d = allHistory[date];
-
-        // フォームのリセット
         document.querySelectorAll('.btn-check, #rabbit-stamp').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.btn-reset').forEach(b => b.classList.remove('show'));
         document.querySelectorAll('input:not([type="date"]), textarea').forEach(i => i.value = "");
@@ -252,7 +257,6 @@
             }
             counts = d.counts || { water: 0, coffee: 0, step: 0, vege: 0 };
             Object.keys(counts).forEach(k => updateCountUI(k));
-            
             document.getElementById('body-temp').value = d.temp || "";
             document.getElementById('mind-space').value = d.space || "";
             document.getElementById('fashion').value = d.fashion || "";
@@ -273,7 +277,6 @@
         }
     }
 
-    // 保存
     window.saveData = async function() {
         const date = document.getElementById('target-date').value;
         const entry = {
@@ -300,27 +303,18 @@
             screen: document.getElementById('screen-h').value,
             memo: document.getElementById('memo').value
         };
-
         document.getElementById('loading').style.display = 'flex';
-        try {
-            await set(ref(db, `${LOG_PATH}/${date}`), entry);
-            alert("森へ同期しました🌿");
-        } catch (e) {
-            alert("エラーが発生しました: " + e.message);
-        }
+        try { await set(ref(db, `${LOG_PATH}/${date}`), entry); alert("森へ同期しました🌿"); } 
+        catch (e) { alert("エラーが発生しました: " + e.message); }
         document.getElementById('loading').style.display = 'none';
     }
 
-    // 履歴表示
     window.showHistory = function() {
         const selectedMonth = document.getElementById('month-filter').value;
         const table = document.getElementById('matrix-table');
-        
-        // データを日付順に配列化してフィルタ
         const filtered = Object.values(allHistory)
-            .filter(d => d.date.startsWith(selectedMonth))
+            .filter(d => d.date && d.date.startsWith(selectedMonth))
             .sort((a, b) => new Date(a.date) - new Date(b.date));
-
         const rows = {
             date: '<th class="label-col">日付</th>',
             mood: '<th class="label-col">気分/体温</th>',
@@ -334,7 +328,6 @@
             sleep: '<th class="label-col">睡眠/画面</th>',
             memo: '<th class="label-col">メモ</th>'
         };
-
         filtered.forEach(d => {
             const c = d.counts || {};
             rows.date += `<td style="font-weight:bold">${d.date.slice(8)}日</td>`;
@@ -349,7 +342,6 @@
             rows.sleep += `<td>💤${d.sleepT}-${d.wakeT}<br>📱${d.screen||0}h</td>`;
             rows.memo += `<td class="wrap-cell">${d.memo || '-'}</td>`;
         });
-
         table.innerHTML = Object.values(rows).map(r => `<tr>${r}</tr>`).join('');
     }
 </script>
