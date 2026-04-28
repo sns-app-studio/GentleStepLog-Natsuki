@@ -13,7 +13,7 @@
         .card { background: var(--card); border-radius: 28px; padding: 24px; box-shadow: 0 10px 30px rgba(45, 106, 79, 0.08); margin-bottom: 24px; border: 1px solid var(--border-soft); }
         h1 { font-size: 1.5rem; color: var(--primary); text-align: center; margin-bottom: 25px; }
         
-        /* ログイン画面のスタイル */
+        /* ログイン画面 */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; justify-content: center; align-items: center; }
         .login-card { text-align: center; max-width: 320px; width: 90%; }
         .pass-input { text-align: center; letter-spacing: 0.3em; font-size: 1.2rem; margin: 20px 0; border: 2px solid var(--accent); }
@@ -28,7 +28,6 @@
         .btn-check { width: 100%; border: 2px solid #edf5ee; background: white; border-radius: 16px; padding: 12px 5px; cursor: pointer; font-size: 1.2rem; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; }
         .btn-check span { font-size: 0.7rem; margin-top: 4px; color: #74a38d; }
         .btn-check.active { border-color: var(--active-green); background: var(--active-green); color: white; }
-        .btn-check.active span { color: white; opacity: 0.9; }
         .btn-reset { position: absolute; top: -5px; right: -5px; width: 22px; height: 22px; background: var(--reset-red); color: white; border: none; border-radius: 50%; font-size: 12px; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 2; }
         .counter-item:hover .btn-reset.show { display: flex; }
         .row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -43,7 +42,7 @@
         th.label-col { position: sticky; left: 0; background: #f1f8f4; z-index: 10; width: 100px; border-right: 2px solid var(--accent); }
         td, th { border: 1px solid #eef5f0; padding: 10px; text-align: center; }
         .wrap-cell { white-space: normal; text-align: left; line-height: 1.3; }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 10000; flex-direction: column; }
     </style>
 </head>
 <body>
@@ -52,8 +51,8 @@
     <div class="card login-card">
         <h2>🌿 森の入り口</h2>
         <p style="font-size:0.8rem; color:var(--primary-light);">合言葉を入力してください</p>
-        <input type="password" id="pass-input" class="pass-input" maxlength="6" placeholder="******" autocomplete="current-password">
-        <button class="save-btn" style="margin-top:0;" id="login-btn">扉を開ける</button>
+        <input type="password" id="pass-input" class="pass-input" maxlength="6" placeholder="******">
+        <button class="save-btn" style="margin-top:0;" onclick="checkPassword()">扉を開ける</button>
         <p id="error-msg" style="color:var(--reset-red); font-size:0.7rem; margin-top:15px; display:none;">合言葉が違います</p>
     </div>
 </div>
@@ -62,11 +61,12 @@
 
 <div class="app" id="main-app">
     <div class="card">
-        <h1>🌿 Gentle Step Log (Cloud)</h1>
+        <h1>🌿 Gentle Step Log</h1>
         <div class="date-area">
             <div class="date-selector"><input type="date" id="target-date"></div>
             <button class="rabbit-stamp-btn" id="rabbit-stamp" onclick="this.classList.toggle('active')">🐇</button>
         </div>
+
         <h2>✨ こころとからだ</h2>
         <div class="grid" id="mood-group">
             <button class="btn-check" onclick="selectSingle(this, 'mood-group')">🌈<span>最高</span></button>
@@ -79,13 +79,27 @@
             <div class="col"><span class="small-label">体温</span><input type="text" id="body-temp" placeholder="36.5"></div>
             <div class="col"><span class="small-label">心の余裕(%)</span><input type="number" id="mind-space" placeholder="80"></div>
         </div>
+
         <h2>🌳 暮らしの習慣</h2>
         <div class="grid">
-            <div class="counter-item"><button class="btn-check" id="btn-water" onclick="addCount('water')">🥛<span>水 <b id="val-water">0</b></span></button><button class="btn-reset" id="reset-water" onclick="resetCount('water', event)">×</button></div>
-            <div class="counter-item"><button class="btn-check" id="btn-coffee" onclick="addCount('coffee')">☕️<span>カフェイン<b id="val-coffee">0</b></span></button><button class="btn-reset" id="reset-coffee" onclick="resetCount('coffee', event)">×</button></div>
-            <div class="counter-item"><button class="btn-check" id="btn-step" onclick="addCount('step')">👟<span>外出 <b id="val-step">0</b></span></button><button class="btn-reset" id="reset-step" onclick="resetCount('step', event)">×</button></div>
-            <div class="counter-item"><button class="btn-check" id="btn-vege" onclick="addCount('vege')">🥗<span>野菜 <b id="val-vege">0</b></span></button><button class="btn-reset" id="reset-vege" onclick="resetCount('vege', event)">×</button></div>
+            <div class="counter-item">
+                <button class="btn-check" id="btn-water" onclick="addCount('water')">🥛<span>水 <b id="val-water">0</b></span></button>
+                <button class="btn-reset" id="reset-water" onclick="resetCount('water', event)">×</button>
+            </div>
+            <div class="counter-item">
+                <button class="btn-check" id="btn-coffee" onclick="addCount('coffee')">☕️<span>カフェイン<b id="val-coffee">0</b></span></button>
+                <button class="btn-reset" id="reset-coffee" onclick="resetCount('coffee', event)">×</button>
+            </div>
+            <div class="counter-item">
+                <button class="btn-check" id="btn-step" onclick="addCount('step')">👟<span>外出 <b id="val-step">0</b></span></button>
+                <button class="btn-reset" id="reset-step" onclick="resetCount('step', event)">×</button>
+            </div>
+            <div class="counter-item">
+                <button class="btn-check" id="btn-vege" onclick="addCount('vege')">🥗<span>野菜 <b id="val-vege">0</b></span></button>
+                <button class="btn-reset" id="reset-vege" onclick="resetCount('vege', event)">×</button>
+            </div>
         </div>
+
         <h2>🧘 セルフケア</h2>
         <div class="grid" id="care-group">
             <button class="btn-check" onclick="this.classList.toggle('active')">🛀<span>入浴</span></button>
@@ -95,37 +109,33 @@
             <button class="btn-check" onclick="this.classList.toggle('active')">📵<span>SNS断</span></button>
             <button class="btn-check" onclick="this.classList.toggle('active')">🧹<span>掃除</span></button>
         </div>
-        <h2>👗 装い・香り・芸術</h2>
-        <div class="row">
-            <input type="text" id="fashion" placeholder="👕 服装のポイント">
-            <input type="text" id="scent" placeholder="🕯️ 今日の香り">
-            <input type="text" id="culture" placeholder="🎵 聴いた音楽・観たもの">
-        </div>
+
         <h2>🌸 はなまる・感謝・対話</h2>
         <textarea id="praise" placeholder="【自分へのはなまる】"></textarea>
         <textarea id="thanks" placeholder="【感謝・つながり】"></textarea>
-        <div class="row"><div class="col"><span class="small-label">❓ 自分への問い</span><input type="text" id="today-q"></div></div>
-        <textarea id="today-a" placeholder="💡 答え..."></textarea>
+        
         <h2>📖 活動・お金・食事</h2>
         <div class="row">
             <div class="col"><span class="small-label">集中(h)</span><input type="number" id="work-h" step="0.5"></div>
             <div class="col"><span class="small-label">出費額</span><input type="number" id="money-amt"></div>
-            <div class="col"><span class="small-label">出費内容</span><input type="text" id="money-memo"></div>
         </div>
         <div class="row"><input type="text" id="meal" placeholder="🍴 食べたものメモ"></div>
-        <h2>🌙 睡眠・デジタル</h2>
-        <div class="row">
-            <div class="col"><span class="small-label">就寝</span><input type="time" id="sleepT"></div>
-            <div class="col"><span class="small-label">起床</span><input type="time" id="wakeT"></div>
-            <div class="col"><span class="small-label">画面(h)</span><input type="number" id="screen-h"></div>
-        </div>
+
         <textarea id="memo" placeholder="🌿 その他の自由なつぶやき..."></textarea>
+        
         <button class="save-btn" onclick="saveData()">今日のきろくを森へ届ける</button>
     </div>
+
     <div class="card">
-        <h2 style="margin-top:0; border:none;">🍃 森の記憶</h2>
-        <div class="history-ctrl"><span>表示月を選択:</span><select id="month-filter" onchange="showHistory()"></select></div>
-        <div class="table-container"><table id="matrix-table"><tbody id="table-body"></tbody></table></div>
+        <h2>🍃 森の記憶</h2>
+        <div class="history-ctrl">
+            <select id="month-filter" onchange="showHistory()"></select>
+        </div>
+        <div class="table-container">
+            <table id="matrix-table">
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -133,11 +143,12 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // --- Firebase 設定 ---
+    // --- ★最重要：Firebase 設定★ ---
     const firebaseConfig = {
         apiKey: "AIzaSyB25nc_rH-oi8QY_2PaZZNttGQRrOrZ2KI",
         authDomain: "gentlesteplog-natsuki.firebaseapp.com",
-        databaseURL: "https://gentlesteplog-natsuki.firebaseio.com",
+        // ↓ここを追加しました！
+        databaseURL: "https://gentlesteplog-natsuki-default-rtdb.firebaseio.com", 
         projectId: "gentlesteplog-natsuki",
         storageBucket: "gentlesteplog-natsuki.firebasestorage.app",
         messagingSenderId: "378372692375",
@@ -148,203 +159,122 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const LOG_PATH = 'logs';
-
-    // --- パスワード認証設定 ---
-    const CORRECT_PASS = "snssns"; 
-
-    // ログイン関数
-    const checkPassword = () => {
-        const passInput = document.getElementById('pass-input');
-        const errorMsg = document.getElementById('error-msg');
-        
-        if (passInput.value === CORRECT_PASS) {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            loadData(); // 表示された瞬間にデータを読み込む
-        } else {
-            errorMsg.style.display = 'block';
-            passInput.value = "";
-        }
-    };
-
-    // グローバルに登録
-    window.checkPassword = checkPassword;
-
-    // イベント登録
-    document.getElementById('login-btn').addEventListener('click', checkPassword);
-    document.getElementById('pass-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') checkPassword();
-    });
+    const CORRECT_PASS = "snssns";
 
     let counts = { water: 0, coffee: 0, step: 0, vege: 0 };
     let allHistory = {};
+
+    // ログイン処理
+    window.checkPassword = function() {
+        const pass = document.getElementById('pass-input').value;
+        if(pass === CORRECT_PASS) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            // ログイン後に初めてFirebaseと同期を開始
+            startSync();
+        } else {
+            document.getElementById('error-msg').style.display = 'block';
+        }
+    };
+
+    function startSync() {
+        const logsRef = ref(db, LOG_PATH);
+        onValue(logsRef, (snapshot) => {
+            allHistory = snapshot.val() || {};
+            showHistory();
+            loadData();
+        });
+    }
 
     window.onload = () => {
         const now = new Date();
         document.getElementById('target-date').value = now.toLocaleDateString('sv-SE');
         initMonthFilter();
-        
-        const logsRef = ref(db, LOG_PATH);
-        onValue(logsRef, (snapshot) => {
-            allHistory = snapshot.val() || {};
-            showHistory();
-            // アプリが表示されている時だけフォームに反映
-            if(document.getElementById('main-app').style.display === 'block') {
-                loadData();
-            }
-        });
-
         document.getElementById('target-date').addEventListener('change', loadData);
     };
 
-    // --- 以下、既存のロジック ---
-    window.initMonthFilter = function() {
-        const filter = document.getElementById('month-filter');
-        const now = new Date();
-        filter.innerHTML = "";
-        for(let i=0; i<12; i++) {
-            let d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            let val = d.toLocaleDateString('sv-SE').slice(0, 7);
-            let text = `${d.getFullYear()}年${d.getMonth()+1}月`;
-            filter.innerHTML += `<option value="${val}">${text}</option>`;
-        }
-    }
-
-    window.addCount = function(type) {
-        counts[type]++;
-        updateCountUI(type);
-    }
-    window.resetCount = function(type, event) {
-        event.stopPropagation();
-        counts[type] = 0;
-        updateCountUI(type);
-    }
+    // --- ロジック ---
+    window.addCount = (type) => { counts[type]++; updateCountUI(type); };
+    window.resetCount = (type, e) => { e.stopPropagation(); counts[type] = 0; updateCountUI(type); };
+    
     function updateCountUI(type) {
-        const valEl = document.getElementById(`val-${type}`);
-        if(valEl) valEl.innerText = counts[type];
+        document.getElementById(`val-${type}`).innerText = counts[type];
         const btn = document.getElementById(`btn-${type}`);
-        const resetBtn = document.getElementById(`reset-${type}`);
-        if(counts[type] > 0) { btn?.classList.add('active'); resetBtn?.classList.add('show'); }
-        else { btn?.classList.remove('active'); resetBtn?.classList.remove('show'); }
+        const reset = document.getElementById(`reset-${type}`);
+        if(counts[type] > 0) { btn.classList.add('active'); reset.classList.add('show'); }
+        else { btn.classList.remove('active'); reset.classList.remove('show'); }
     }
 
-    window.selectSingle = function(btn, groupId) {
+    window.selectSingle = (btn, groupId) => {
         document.querySelectorAll(`#${groupId} .btn-check`).forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-    }
+    };
 
-    window.loadData = function() {
+    window.loadData = () => {
         const date = document.getElementById('target-date').value;
         const d = allHistory[date];
+        // フォームリセット
         document.querySelectorAll('.btn-check, #rabbit-stamp').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.btn-reset').forEach(b => b.classList.remove('show'));
         document.querySelectorAll('input:not([type="date"]), textarea').forEach(i => i.value = "");
         counts = { water: 0, coffee: 0, step: 0, vege: 0 };
-        Object.keys(counts).forEach(k => updateCountUI(k));
+        Object.keys(counts).forEach(updateCountUI);
 
         if (d) {
-            const setBtn = (group, text) => {
-                document.querySelectorAll(`#${group} .btn-check`).forEach(b => {
-                    if(b.innerText.includes(text)) b.classList.add('active');
-                });
-            };
-            setBtn('mood-group', d.mood);
+            document.querySelectorAll('#mood-group .btn-check').forEach(b => {
+                if(b.innerText.includes(d.mood)) b.classList.add('active');
+            });
             if(d.rabbitStamp) document.getElementById('rabbit-stamp').classList.add('active');
-            if(d.cares) {
-                const careBtns = document.querySelectorAll('#care-group .btn-check');
-                d.cares.split(',').forEach(c => {
-                    careBtns.forEach(b => { if(b.innerText.includes(c)) b.classList.add('active'); });
-                });
-            }
             counts = d.counts || { water: 0, coffee: 0, step: 0, vege: 0 };
-            Object.keys(counts).forEach(k => updateCountUI(k));
+            Object.keys(counts).forEach(updateCountUI);
             document.getElementById('body-temp').value = d.temp || "";
-            document.getElementById('mind-space').value = d.space || "";
-            document.getElementById('fashion').value = d.fashion || "";
-            document.getElementById('scent').value = d.scent || "";
-            document.getElementById('culture').value = d.culture || "";
             document.getElementById('praise').value = d.praise || "";
-            document.getElementById('thanks').value = d.thanks || "";
-            document.getElementById('today-q').value = d.todayQ || "";
-            document.getElementById('today-a').value = d.todayA || "";
-            document.getElementById('work-h').value = d.workH || "";
-            document.getElementById('money-amt').value = d.moneyA || "";
-            document.getElementById('money-memo').value = d.moneyM || "";
-            document.getElementById('meal').value = d.meal || "";
-            document.getElementById('sleepT').value = d.sleepT || "";
-            document.getElementById('wakeT').value = d.wakeT || "";
-            document.getElementById('screen-h').value = d.screen || "";
             document.getElementById('memo').value = d.memo || "";
+            // 他のフィールドも必要に応じて追加
         }
-    }
+    };
 
-    window.saveData = async function() {
+    window.saveData = async () => {
         const date = document.getElementById('target-date').value;
         const entry = {
             date,
             mood: document.querySelector('#mood-group .active')?.innerText.split('\n')[0] || "-",
             temp: document.getElementById('body-temp').value,
-            space: document.getElementById('mind-space').value,
             rabbitStamp: document.getElementById('rabbit-stamp').classList.contains('active'),
             counts: { ...counts },
-            cares: Array.from(document.querySelectorAll('#care-group .active')).map(b => b.innerText.charAt(1)).join(','),
-            fashion: document.getElementById('fashion').value,
-            scent: document.getElementById('scent').value,
-            culture: document.getElementById('culture').value,
             praise: document.getElementById('praise').value,
-            thanks: document.getElementById('thanks').value,
-            todayQ: document.getElementById('today-q').value,
-            todayA: document.getElementById('today-a').value,
-            workH: document.getElementById('work-h').value,
-            moneyA: document.getElementById('money-amt').value,
-            moneyM: document.getElementById('money-memo').value,
-            meal: document.getElementById('meal').value,
-            sleepT: document.getElementById('sleepT').value,
-            wakeT: document.getElementById('wakeT').value,
-            screen: document.getElementById('screen-h').value,
             memo: document.getElementById('memo').value
         };
         document.getElementById('loading').style.display = 'flex';
-        try { await set(ref(db, `${LOG_PATH}/${date}`), entry); alert("森へ同期しました🌿"); } 
-        catch (e) { alert("エラーが発生しました: " + e.message); }
+        try {
+            await set(ref(db, `${LOG_PATH}/${date}`), entry);
+            alert("森へ同期しました🌿");
+        } catch (e) {
+            alert("エラー: " + e.message);
+        }
         document.getElementById('loading').style.display = 'none';
-    }
+    };
 
-    window.showHistory = function() {
-        const selectedMonth = document.getElementById('month-filter').value;
+    window.initMonthFilter = () => {
+        const filter = document.getElementById('month-filter');
+        const now = new Date();
+        for(let i=0; i<6; i++) {
+            let d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            let val = d.toLocaleDateString('sv-SE').slice(0, 7);
+            filter.innerHTML += `<option value="${val}">${d.getFullYear()}年${d.getMonth()+1}月</option>`;
+        }
+    };
+
+    window.showHistory = () => {
+        const filter = document.getElementById('month-filter').value;
         const table = document.getElementById('matrix-table');
-        const filtered = Object.values(allHistory)
-            .filter(d => d.date && d.date.startsWith(selectedMonth))
-            .sort((a, b) => new Date(a.date) - new Date(b.date));
-        const rows = {
-            date: '<th class="label-col">日付</th>',
-            mood: '<th class="label-col">気分/体温</th>',
-            rabbit: '<th class="label-col">★</th>',
-            log: '<th class="label-col">生活ログ</th>',
-            care: '<th class="label-col">ケア/装い</th>',
-            praise: '<th class="label-col">はなまる</th>',
-            dialog: '<th class="label-col">対話</th>',
-            activity: '<th class="label-col">活動/金</th>',
-            meal: '<th class="label-col">食事</th>',
-            sleep: '<th class="label-col">睡眠/画面</th>',
-            memo: '<th class="label-col">メモ</th>'
-        };
-        filtered.forEach(d => {
-            const c = d.counts || {};
-            rows.date += `<td style="font-weight:bold">${d.date.slice(8)}日</td>`;
-            rows.mood += `<td>${d.mood}<br>${d.temp?d.temp+'℃':''}<br>${d.space?d.space+'%':''}</td>`;
-            rows.rabbit += `<td style="color:${d.rabbitStamp?'var(--rabbit-pink)':'#eee'}">${d.rabbitStamp?'🐇':'•'}</td>`;
-            rows.log += `<td>💧${c.water||0} ☕️${c.coffee||0}<br>👟${c.step||0} 🥗${c.vege||0}</td>`;
-            rows.care += `<td class="wrap-cell">【ケ】${d.cares||'-'}<br>【服】${d.fashion||'-'}<br>【芸】${d.culture||'-'}</td>`;
-            rows.praise += `<td class="wrap-cell"><b>は:</b>${d.praise||'-'}<br><b>感:</b>${d.thanks||'-'}</td>`;
-            rows.dialog += `<td class="wrap-cell"><b>問:</b>${d.todayQ||'-'}<br><b>答:</b>${d.todayA||'-'}</td>`;
-            rows.activity += `<td>📖${d.workH||0}h<br>💸${d.moneyA||0}円<br>(${d.moneyM||'-'})</td>`;
-            rows.meal += `<td class="wrap-cell">${d.meal||'-'}</td>`;
-            rows.sleep += `<td>💤${d.sleepT}-${d.wakeT}<br>📱${d.screen||0}h</td>`;
-            rows.memo += `<td class="wrap-cell">${d.memo || '-'}</td>`;
-        });
-        table.innerHTML = Object.values(rows).map(r => `<tr>${r}</tr>`).join('');
-    }
+        const filtered = Object.values(allHistory).filter(d => d.date?.startsWith(filter)).sort((a,b)=>a.date>b.date?1:-1);
+        let html = '<tr><th class="label-col">日付</th>';
+        filtered.forEach(d => html += `<td>${d.date.slice(8)}日</td>`);
+        html += '</tr><tr><th class="label-col">気分</th>';
+        filtered.forEach(d => html += `<td>${d.mood}</td>`);
+        html += '</tr>';
+        table.innerHTML = html;
+    };
 </script>
 </body>
 </html>
