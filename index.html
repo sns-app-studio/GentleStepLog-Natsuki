@@ -15,7 +15,7 @@
         
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; justify-content: center; align-items: center; }
         .login-card { text-align: center; max-width: 320px; width: 90%; }
-        .pass-input { text-align: center; letter-spacing: 0.3em; font-size: 1.2rem; margin: 20px 0; border: 2px solid var(--accent); padding: 12px; width: 100%; border-radius: 15px; box-sizing: border-box;}
+        .pass-input { text-align: center; letter-spacing: 0.3em; font-size: 1.2rem; margin: 20px 0; border: 2px solid var(--accent); padding: 14px; width: 100%; border-radius: 15px; box-sizing: border-box; background: white;}
         
         .date-area { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; }
         .date-selector input { padding: 10px 18px; border-radius: 20px; border: 2px solid var(--accent); font-size: 1rem; color: var(--primary); outline: none; background: var(--input-bg); }
@@ -41,7 +41,6 @@
         
         .save-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 18px; border-radius: 50px; font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 8px 20px rgba(45, 106, 79, 0.2); margin-top: 30px; }
         
-        /* 森の記憶：横スクロール表スタイル */
         .table-container { width: 100%; overflow-x: auto; background: white; border-radius: 20px; border: 1px solid var(--accent); }
         table { border-collapse: collapse; min-width: 1200px; font-size: 0.75rem; table-layout: fixed; }
         th.label-col { position: sticky; left: 0; background: #f1f8f4; z-index: 10; width: 100px; border-right: 2px solid var(--accent); }
@@ -57,7 +56,7 @@
     <div class="card login-card">
         <h2>🌿 森の入り口</h2>
         <p style="font-size:0.8rem;">合言葉を入力してください</p>
-        <input type="password" id="pass-input" class="pass-input" maxlength="6" placeholder="******">
+        <input type="password" id="pass-input" class="pass-input" maxlength="6" placeholder="******" onkeydown="if(event.key==='Enter') checkPassword()">
         <button class="save-btn" style="margin-top:0;" onclick="checkPassword()">扉を開ける</button>
         <p id="error-msg" style="color:var(--reset-red); font-size:0.7rem; margin-top:15px; display:none;">合言葉が違います</p>
     </div>
@@ -83,4 +82,115 @@
         </div>
         <div class="row">
             <div class="col"><span class="small-label">体温</span><input type="text" id="body-temp" placeholder="36.5"></div>
-            <div class="col"><span class="small-label">心の余裕(%)</span><input type="number"
+            <div class="col"><span class="small-label">心の余裕(%)</span><input type="number" id="mind-space" placeholder="80"></div>
+        </div>
+
+        <h2>🌳 暮らしの習慣</h2>
+        <div class="grid">
+            <div class="counter-item"><button class="btn-check" id="btn-water" onclick="addCount('water')">🥛<span>水 <b id="val-water">0</b></span></button><button class="btn-reset" id="reset-water" onclick="resetCount('water', event)">×</button></div>
+            <div class="counter-item"><button class="btn-check" id="btn-coffee" onclick="addCount('coffee')">☕️<span>カフェイン<b id="val-coffee">0</b></span></button><button class="btn-reset" id="reset-coffee" onclick="resetCount('coffee', event)">×</button></div>
+            <div class="counter-item"><button class="btn-check" id="btn-step" onclick="addCount('step')">👟<span>外出 <b id="val-step">0</b></span></button><button class="btn-reset" id="reset-step" onclick="resetCount('step', event)">×</button></div>
+            <div class="counter-item"><button class="btn-check" id="btn-vege" onclick="addCount('vege')">🥗<span>野菜 <b id="val-vege">0</b></span></button><button class="btn-reset" id="reset-vege" onclick="resetCount('vege', event)">×</button></div>
+        </div>
+
+        <h2>🧘 セルフケア</h2>
+        <div class="grid" id="care-group">
+            <button class="btn-check" onclick="this.classList.toggle('active')">🛀<span>入浴</span></button>
+            <button class="btn-check" onclick="this.classList.toggle('active')">🧴<span>保湿</span></button>
+            <button class="btn-check" onclick="this.classList.toggle('active')">🤸<span>伸展</span></button>
+            <button class="btn-check" onclick="this.classList.toggle('active')">💊<span>サプリ</span></button>
+            <button class="btn-check" onclick="this.classList.toggle('active')">📵<span>SNS断</span></button>
+            <button class="btn-check" onclick="this.classList.toggle('active')">🧹<span>掃除</span></button>
+        </div>
+
+        <h2>👗 装い・香り・芸術</h2>
+        <div class="row">
+            <input type="text" id="fashion" placeholder="👕 服装">
+            <input type="text" id="scent" placeholder="🕯️ 香り">
+            <input type="text" id="culture" placeholder="🎵 芸術/音楽">
+        </div>
+
+        <h2>🌸 はなまる・感謝・対話</h2>
+        <textarea id="praise" placeholder="【自分へのはなまる】"></textarea>
+        <textarea id="thanks" placeholder="【感謝・つながり】"></textarea>
+        <div class="row"><div class="col"><span class="small-label">❓ 問い</span><input type="text" id="today-q"></div></div>
+        <textarea id="today-a" placeholder="💡 答え..."></textarea>
+
+        <h2>📖 活動・お金・食事</h2>
+        <div class="row">
+            <div class="col"><span class="small-label">集中(h)</span><input type="number" id="work-h" step="0.5"></div>
+            <div class="col"><span class="small-label">出費</span><input type="number" id="money-amt"></div>
+        </div>
+        <input type="text" id="meal" placeholder="🍴 食事メモ">
+
+        <h2>🌙 睡眠・画面</h2>
+        <div class="row">
+            <div class="col"><span class="small-label">就寝</span><input type="time" id="sleepT"></div>
+            <div class="col"><span class="small-label">起床</span><input type="time" id="wakeT"></div>
+            <div class="col"><span class="small-label">画面(h)</span><input type="number" id="screen-h"></div>
+        </div>
+        
+        <textarea id="memo" placeholder="🌿 つぶやき..."></textarea>
+        <button class="save-btn" onclick="saveData()">今日のきろくを森へ届ける</button>
+    </div>
+
+    <div class="card">
+        <h2>🍃 森の記憶</h2>
+        <div class="history-ctrl"><select id="month-filter" onchange="showHistory()"></select></div>
+        <div class="table-container"><table id="matrix-table"><tbody id="table-body"></tbody></table></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyB25nc_rH-oi8QY_2PaZZNttGQRrOrZ2KI",
+        authDomain: "gentlesteplog-natsuki.firebaseapp.com",
+        databaseURL: "https://gentlesteplog-natsuki-default-rtdb.asia-southeast1.firebasedatabase.app", 
+        projectId: "gentlesteplog-natsuki",
+        storageBucket: "gentlesteplog-natsuki.firebasestorage.app",
+        messagingSenderId: "378372692375",
+        appId: "1:378372692375:web:d16ee070202f30b7e28cd2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const LOG_PATH = 'logs';
+    const CORRECT_PASS = "snssns";
+
+    let counts = { water: 0, coffee: 0, step: 0, vege: 0 };
+    let allHistory = {};
+
+    // ログイン関数をグローバル（window）に登録
+    window.checkPassword = function() {
+        const input = document.getElementById('pass-input').value;
+        if(input === CORRECT_PASS) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            startSync();
+        } else {
+            document.getElementById('error-msg').style.display = 'block';
+            document.getElementById('pass-input').value = "";
+        }
+    };
+
+    function startSync() {
+        document.getElementById('loading').style.display = 'flex';
+        onValue(ref(db, LOG_PATH), (snapshot) => {
+            allHistory = snapshot.val() || {};
+            showHistory();
+            loadData();
+            document.getElementById('loading').style.display = 'none';
+        }, (err) => { 
+            console.error(err);
+            document.getElementById('loading').style.display = 'none'; 
+        });
+    }
+
+    window.onload = () => {
+        document.getElementById('target-date').value = new Date().toLocaleDateString('sv-SE');
+        initMonthFilter();
+        document.getElementById('target-date').addEventListener('change', loadData);
+    };
